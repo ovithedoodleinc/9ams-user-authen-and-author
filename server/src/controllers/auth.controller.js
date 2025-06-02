@@ -100,7 +100,8 @@ const signinController = async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       maxAge: rememberMe ? 7 * 24 * 60 * 60 * 1000 : 30 * 60 * 1000,
-      domain: `.${req.headers.host.split(":")[0]}`,
+      domain: process.env.DOMAIN,
+      sameSite: "lax",
     });
 
     // prepare response data
