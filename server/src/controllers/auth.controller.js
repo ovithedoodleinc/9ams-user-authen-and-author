@@ -1,5 +1,6 @@
 const { ShopModel } = require("../models/shop.model");
 const { UserModel } = require("../models/user.model");
+const bcrypt = require("bcrypt");
 
 const signupController = async (req, res) => {
   try {
@@ -28,10 +29,13 @@ const signupController = async (req, res) => {
       }
     }
 
+    // hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     // all checks passed, proceed with user and shop creation
     const user = await UserModel.create({
       username,
-      password,
+      password: hashedPassword,
     });
     const shops = await ShopModel.insertMany(
       shopNames.map((name) => ({
@@ -40,12 +44,22 @@ const signupController = async (req, res) => {
       }))
     );
 
-    res.status(201).json({ user, shops });
+    const userData = {
+      _id: user._id,
+      username: user.username,
+    };
+    const shopsData = shops.map((shop) => ({
+      _id: shop._id,
+      name: shop.name,
+      owner: shop.owner,
+    }));
+
+    res.status(201).json({ user: userData, shops: shopsData });
   } catch (err) {
     console.log("🚀 ~ signup ~ err:", err);
 
     res.status(400).json({
-      error: err.message || "An error occurred during signup",
+      error: err.message || "an error occurred during signup",
     });
   }
 };
