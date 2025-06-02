@@ -99,7 +99,8 @@ const signinController = async (req, res) => {
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      maxAge: rememberMe ? 7 * 24 * 60 * 60 * 1000 : 30 * 60 * 1000, // 7 days or 30 minutes
+      maxAge: rememberMe ? 7 * 24 * 60 * 60 * 1000 : 30 * 60 * 1000,
+      domain: `.${req.headers.host.split(":")[0]}`,
     });
 
     // prepare response data
