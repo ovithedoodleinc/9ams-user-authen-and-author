@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
       required: [true, "username required"],
-      minlength: [2, "username must be at least 2 characters"],
+      minlength: [3, "username must be at least 3 characters"],
       maxlength: [32, "username must be in 32 characters"],
       unique: [true, "username must be unique"],
     },
@@ -21,21 +21,12 @@ const userSchema = new mongoose.Schema(
         "password must include at least one number and one special character",
       ],
     },
-    shops: {
-      type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Shop" }],
-      validate: {
-        validator: function (value) {
-          return Array.isArray(value) && value.length >= 3 && value.length <= 4;
-        },
-        message: "user must have between 3 and 4 shops",
-      },
-    },
   },
   { timestamps: true }
 );
 
-const User = mongoose.model("User", userSchema);
+const UserModel = mongoose.model("User", userSchema);
 
 module.exports = {
-  User,
+  UserModel,
 };

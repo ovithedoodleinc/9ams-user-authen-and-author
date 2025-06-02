@@ -1,6 +1,7 @@
 const dotenv = require("dotenv");
 const express = require("express");
 const { connectDB } = require("./config/db");
+const { authRouter } = require("./routes/auth.route");
 
 dotenv.config();
 
@@ -10,9 +11,9 @@ connectDB();
 
 const app = express();
 
-app.get("/", (_, res) => {
-  res.send("hello, world!");
-});
+app.use(express.json());
+
+app.use("/auth", authRouter);
 
 app.listen(PORT, () => {
   console.log(`app is running on port ${PORT}`);
