@@ -1,6 +1,7 @@
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const { ShopModel } = require("../models/shop.model");
 const { UserModel } = require("../models/user.model");
-const bcrypt = require("bcrypt");
 
 const signupController = async (req, res) => {
   try {
@@ -44,6 +45,7 @@ const signupController = async (req, res) => {
       }))
     );
 
+    // prepare response data
     const userData = {
       _id: user._id,
       username: user.username,
@@ -64,6 +66,59 @@ const signupController = async (req, res) => {
   }
 };
 
+const signinController = async (req, res) => {
+  try {
+    const { username, password, rememberMe } = req.body;
+
+    // find user by username
+    const user = await UserModel.findOne({ username });
+    if (!user) {
+      return res.status(400).json({
+        error: "user not found",
+      });
+    }
+
+    // check if password is correct
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
+    if (!isPasswordCorrect) {
+      return res.status(400).json({
+        error: "incorrect password",
+      });
+    }
+
+    // generate jwt token
+    const payload = {
+      _id: user._id,
+      username: user.username,
+    };
+    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: rememberMe ? "7d" : "30m",
+    });
+
+    // set token in cookie
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: rememberMe ? 7 * 24 * 60 * 60 * 1000 : 30 * 60 * 1000, // 7 days or 30 minutes
+    });
+
+    // prepare response data
+    const userData = {
+      _id: user._id,
+      username: user.username,
+    };
+
+    res.status(200).json({ user: userData });
+  } catch (err) {
+    console.log("🚀 ~ signinController ~ err:", err);
+
+    res.status(400).json({
+      error: err.message || "an error occurred during signup",
+    });
+  }
+};
+
 module.exports = {
   signupController,
+  signinController,
 };
