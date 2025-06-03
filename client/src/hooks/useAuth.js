@@ -7,7 +7,6 @@ export function useAuth() {
 
   useEffect(() => {
     fetch(`${import.meta.env.VITE_API_URL}/auth/verify`, {
-      method: "GET",
       credentials: "include",
     })
       .then(async (res) => {

@@ -65,6 +65,16 @@ const Header = ({ user }) => {
     }
   };
 
+  const handleRedirectToShop = (shopName) => {
+    const shopUrl = `${shopName}${import.meta.env.VITE_DOMAIN}`;
+
+    if (window.location.hostname.includes("localhost")) {
+      window.location.href = `http://${shopUrl}:${window.location.port}/`;
+    } else {
+      window.location.href = `https://${shopUrl}/`;
+    }
+  };
+
   return (
     <Navbar fluid rounded>
       <div className="flex md:order-2">
@@ -88,7 +98,12 @@ const Header = ({ user }) => {
             <Spinner />
           ) : (
             shops.map((shop) => (
-              <DropdownItem key={shop._id}>{shop.name}</DropdownItem>
+              <DropdownItem
+                onClick={() => handleRedirectToShop(shop.name)}
+                key={shop._id}
+              >
+                {shop.name}
+              </DropdownItem>
             ))
           )}
           <DropdownDivider />

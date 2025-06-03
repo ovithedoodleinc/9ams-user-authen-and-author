@@ -120,11 +120,12 @@ const signinController = async (req, res) => {
     // set token in cookie
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      // secure: process.env.NODE_ENV === "production",
+      secure: true,
       maxAge: rememberMe ? 7 * 24 * 60 * 60 * 1000 : 30 * 60 * 1000,
-      // domain: process.env.DOMAIN,
-      domain: ".localhost",
-      sameSite: "lax",
+      domain: process.env.DOMAIN,
+      // sameSite: "lax",
+      sameSite: "none",
       path: "/",
     });
 
@@ -156,10 +157,11 @@ const verifyController = async (req, res) => {
 const logoutController = async (_, res) => {
   res.clearCookie("token", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    // domain: process.env.DOMAIN,
-    domain: ".localhost",
-    sameSite: "lax",
+    // secure: process.env.NODE_ENV === "production",
+    secure: true,
+    domain: process.env.DOMAIN,
+    // sameSite: "lax",
+    sameSite: "none",
     path: "/",
   });
 
