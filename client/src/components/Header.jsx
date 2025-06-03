@@ -13,11 +13,13 @@ import {
 } from "flowbite-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
+import CustomModal from "./Modal";
 
 const Header = ({ user }) => {
   const [shops, setShops] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isActive, setIsActive] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
 
   const navigate = useNavigate();
 
@@ -76,49 +78,60 @@ const Header = ({ user }) => {
   };
 
   return (
-    <Navbar fluid rounded>
-      <div className="flex md:order-2">
-        <Dropdown
-          arrowIcon={false}
-          inline
-          label={
-            <Avatar
-              onClick={() => setIsActive(true)}
-              alt="User settings"
-              img="/default-avatar-image.jpg"
-              rounded
-            />
-          }
-        >
-          <DropdownHeader>
-            <span className="block text-sm">{user.username}</span>
-          </DropdownHeader>
-          <DropdownDivider />
-          {isLoading ? (
-            <Spinner />
-          ) : (
-            shops.map((shop) => (
-              <DropdownItem
-                onClick={() => handleRedirectToShop(shop.name)}
-                key={shop._id}
-              >
-                {shop.name}
-              </DropdownItem>
-            ))
-          )}
-          <DropdownDivider />
-          <DropdownItem onClick={handleLogout}>Logout</DropdownItem>
-        </Dropdown>
-        <NavbarToggle />
-      </div>
-      <NavbarCollapse>
-        <NavbarLink href="#" className="font-bold">
-          <Button size="xl" color="dark" outline>
-            Simple Dashboard
-          </Button>
-        </NavbarLink>
-      </NavbarCollapse>
-    </Navbar>
+    <>
+      <Navbar fluid rounded>
+        <div className="flex md:order-2">
+          <Dropdown
+            arrowIcon={false}
+            inline
+            label={
+              <Avatar
+                onClick={() => setIsActive(true)}
+                alt="User settings"
+                img="/default-avatar-image.jpg"
+                rounded
+              />
+            }
+          >
+            <DropdownHeader>
+              <span className="block text-sm">{user.username}</span>
+            </DropdownHeader>
+            <DropdownDivider />
+            {isLoading ? (
+              <div className="flex justify-center items-center p-4">
+                <Spinner />
+              </div>
+            ) : (
+              shops.map((shop) => (
+                <DropdownItem
+                  onClick={() => handleRedirectToShop(shop.name)}
+                  key={shop._id}
+                >
+                  {shop.name}
+                </DropdownItem>
+              ))
+            )}
+            <DropdownDivider />
+            <DropdownItem onClick={() => setOpenModal(true)}>
+              Logout
+            </DropdownItem>
+          </Dropdown>
+          <NavbarToggle />
+        </div>
+        <NavbarCollapse>
+          <NavbarLink href="#" className="font-bold">
+            <Button size="xl" color="dark" outline>
+              Simple Dashboard
+            </Button>
+          </NavbarLink>
+        </NavbarCollapse>
+      </Navbar>
+      <CustomModal
+        openModal={openModal}
+        setOpenModal={setOpenModal}
+        handleLogout={handleLogout}
+      />
+    </>
   );
 };
 
