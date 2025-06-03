@@ -7,6 +7,29 @@ const signupController = async (req, res) => {
   try {
     const { shopNames, username, password } = req.body;
 
+    // check shop names array is not empty
+    if (!Array.isArray(shopNames) || shopNames.length === 0) {
+      return res.status(400).json({
+        error: "shop names must be a non-empty array",
+      });
+    }
+
+    // check if shop names array is not containing empty strings
+    if (
+      shopNames.some((name) => typeof name !== "string" || name.trim() === "")
+    ) {
+      return res.status(400).json({
+        error: "shop names must be non-empty strings",
+      });
+    }
+
+    // check if shop names array is in the limit
+    if (shopNames.length < 3 || shopNames.length > 4) {
+      return res.status(400).json({
+        error: "you can create a minimum 3 or maximum 4 shops",
+      });
+    }
+
     // check if shopNames array is not containing duplicates item in the request body
     const setOfShopNames = new Set(shopNames);
     if (setOfShopNames.size !== shopNames.length) {
@@ -30,6 +53,16 @@ const signupController = async (req, res) => {
       }
     }
 
+    // check password pattern
+    const passwordPattern =
+      /^(?=.*[0-9])(?=.*[!@#$%^&*])[A-Za-z0-9!@#$%^&*]{8,}$/;
+    if (!passwordPattern.test(password)) {
+      return res.status(400).json({
+        error:
+          "password must be at least 8 characters long, contain at least one special character, and one number",
+      });
+    }
+
     // hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -45,18 +78,7 @@ const signupController = async (req, res) => {
       }))
     );
 
-    // prepare response data
-    const userData = {
-      _id: user._id,
-      username: user.username,
-    };
-    const shopsData = shops.map((shop) => ({
-      _id: shop._id,
-      name: shop.name,
-      owner: shop.owner,
-    }));
-
-    res.status(201).json({ user: userData, shops: shopsData });
+    res.status(201).json({ success: true });
   } catch (err) {
     console.log("🚀 ~ signup ~ err:", err);
 
@@ -100,17 +122,13 @@ const signinController = async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       maxAge: rememberMe ? 7 * 24 * 60 * 60 * 1000 : 30 * 60 * 1000,
-      domain: process.env.DOMAIN,
+      // domain: process.env.DOMAIN,
+      domain: ".localhost",
       sameSite: "lax",
+      path: "/",
     });
 
-    // prepare response data
-    const userData = {
-      _id: user._id,
-      username: user.username,
-    };
-
-    res.status(200).json({ user: userData });
+    res.status(200).json({ success: true });
   } catch (err) {
     console.log("🚀 ~ signinController ~ err:", err);
 
@@ -120,7 +138,37 @@ const signinController = async (req, res) => {
   }
 };
 
+const verifyController = async (req, res) => {
+  const token = req.cookies.token;
+  if (!token) {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    res.json({ user: decoded });
+  } catch (err) {
+    res.status(401).json({ error: "invalid token" });
+  }
+};
+
+const logoutController = async (_, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    // domain: process.env.DOMAIN,
+    domain: ".localhost",
+    sameSite: "lax",
+    path: "/",
+  });
+
+  res.status(200).json({ success: true, message: "Logged out" });
+};
+
 module.exports = {
   signupController,
   signinController,
+  verifyController,
+  logoutController,
 };
